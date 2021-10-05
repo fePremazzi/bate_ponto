@@ -1,6 +1,6 @@
 # hitdot_app
 
-Bate ponto cvc
+Bate ponto
 
 ## Getting Started
 
