@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
+
   runApp(HitDotApp());
 }
 
@@ -85,7 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             MyStatefulCheckbox(),
             ElevatedButton(
-              onPressed: null,
+              onPressed: () {
+                debugPrint(FlutterConfig.get('API_URL'));
+              },
               child: Text("Enviar"),
             ),
           ],
