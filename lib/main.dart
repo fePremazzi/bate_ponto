@@ -37,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,32 +81,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
 
-                  String? user = _cpfController.text;
+                  String? cpf = _cpfController.text;
                   String? pwd = _pwdController.text;
 
-                  if (user.isNotEmpty && pwd.isNotEmpty) {
-                    SharedPreferences.getInstance().then(
-                      (prefs) {
-                        prefs.setString('cpf', user);
-                        prefs.setString('pwd', pwd);
-                      },
-                    );
-                    Future<String> response = batePonto(user, pwd);
-                    response.then(
-                      (value) => showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('Alerta'),
-                          content: Text(value),
-                          actions: <Widget>[                            
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, 'OK'),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                  if (cpf.isNotEmpty && pwd.isNotEmpty) {
+                    _enviaPonto(cpf, pwd, context);
                   }
                 },
                 child: Text("Enviar"),
@@ -120,11 +98,71 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+void _enviaPonto(String cpf, String pwd, BuildContext context) {
+  _setPreferences(cpf, pwd);
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: const Text('Alerta'),
+      content: Text("Deseja realmente bater o ponto?"),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Sim'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Não'),
+        ),
+      ],
+    ),
+  ).then(
+    (exit) {
+    
+      if (exit && exit != null) {
+        _batePontoService(cpf, pwd, context);
+      }
+    }
+  );
+}
+
+
+
+void _batePontoService(String cpf, String pwd, BuildContext context) {
+  Future<String> response = batePonto(cpf, pwd);
+  response.then(
+    (value) => showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Alerta'),
+        content: Text(value),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'OK'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    ),
+  );
+  
+}
+
+void _setPreferences(String cpf, String pwd) {
+  SharedPreferences.getInstance().then(
+    (prefs) {
+      prefs.setString('cpf', cpf);
+      prefs.setString('pwd', pwd);
+    },
+  );
+}
+
 void _loadUserEmailPassword() async {
   SharedPreferences _prefs = await SharedPreferences.getInstance();
   var _cpf = _prefs.getString("cpf") ?? "";
   var _pwd = _prefs.getString("pwd") ?? "";
 
-  _cpfController.text = _cpf ?? "";
-  _pwdController.text = _pwd ?? "";
+  _cpfController.text = _cpf;
+  _pwdController.text = _pwd;
 }
