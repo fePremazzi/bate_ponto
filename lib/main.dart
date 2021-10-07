@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hitdot_app/service/BatePontoService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Create storage
-final storage = new FlutterSecureStorage();
+final _cpfController = TextEditingController();
+final _pwdController = TextEditingController();
 
 void main() async {
   await dotenv.load(fileName: ".env");
+  _loadUserEmailPassword();
 
   runApp(HitDotApp());
 }
@@ -18,15 +20,6 @@ class HitDotApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: 'Bate ponto'),
@@ -37,15 +30,6 @@ class HitDotApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key, required this.title}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -53,9 +37,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _cpfController = TextEditingController();
-  final _pwdController = TextEditingController();
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,10 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: <Widget>[
             TextFormField(
+              keyboardType: TextInputType.number,
               controller: _cpfController,
               decoration: const InputDecoration(
                 labelText: "CPF",
-                hintText: 'Digite seu CPF',
+                hintText: 'Digite seu CPF (somente numeros)',
               ),
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
@@ -93,14 +76,39 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               obscureText: true,
             ),
-            // MyStatefulCheckbox(),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
               child: ElevatedButton(
                 onPressed: () {
                   debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
+
                   String? user = _cpfController.text;
-                  debugPrint(user);
+                  String? pwd = _pwdController.text;
+
+                  if (user.isNotEmpty && pwd.isNotEmpty) {
+                    SharedPreferences.getInstance().then(
+                      (prefs) {
+                        prefs.setString('cpf', user);
+                        prefs.setString('pwd', pwd);
+                      },
+                    );
+                    Future<String> response = batePonto(user, pwd);
+                    response.then(
+                      (value) => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('Alerta'),
+                          content: Text(value),
+                          actions: <Widget>[                            
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
                 },
                 child: Text("Enviar"),
               ),
@@ -112,30 +120,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-/// This is the stateful widget that the main application instantiates.
-class MyStatefulCheckbox extends StatefulWidget {
-  const MyStatefulCheckbox({Key? key}) : super(key: key);
+void _loadUserEmailPassword() async {
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  var _cpf = _prefs.getString("cpf") ?? "";
+  var _pwd = _prefs.getString("pwd") ?? "";
 
-  @override
-  State<MyStatefulCheckbox> createState() => _CheckBoxStfull();
-}
-
-/// This is the private State class that goes with MyStatefulWidget.
-class _CheckBoxStfull extends State<MyStatefulCheckbox> {
-  bool isChecked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return CheckboxListTile(
-      title: Text("Salvar cpf e senha"),
-      controlAffinity: ListTileControlAffinity.leading,
-      checkColor: Colors.white,
-      value: isChecked,
-      onChanged: (bool? value) {
-        setState(() {
-          isChecked = value!;
-        });
-      },
-    );
-  }
+  _cpfController.text = _cpf ?? "";
+  _pwdController.text = _pwd ?? "";
 }
