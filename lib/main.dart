@@ -4,8 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Create storage
 final storage = new FlutterSecureStorage();
-final cpfController = TextEditingController();
-final pwdController = TextEditingController();
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -55,7 +53,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final _cpfController = TextEditingController();
+  final _pwdController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: <Widget>[
             TextFormField(
-              controller: cpfController,
+              controller: _cpfController,
               decoration: const InputDecoration(
                 labelText: "CPF",
                 hintText: 'Digite seu CPF',
@@ -81,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             TextFormField(
-              controller: pwdController,
+              controller: _pwdController,
               decoration: const InputDecoration(
                 hintText: 'Digite sua senha',
                 labelText: "Senha",
@@ -100,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                 onPressed: () {
                   debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
-                  String? user = cpfController.text;
+                  String? user = _cpfController.text;
                   debugPrint(user);
                 },
                 child: Text("Enviar"),
