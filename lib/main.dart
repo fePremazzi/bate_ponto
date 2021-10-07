@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// Create storage
+final storage = new FlutterSecureStorage();
+final cpfController = TextEditingController();
+final pwdController = TextEditingController();
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -62,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: <Widget>[
             TextFormField(
+              controller: cpfController,
               decoration: const InputDecoration(
                 labelText: "CPF",
                 hintText: 'Digite seu CPF',
@@ -74,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             TextFormField(
+              controller: pwdController,
               decoration: const InputDecoration(
                 hintText: 'Digite sua senha',
                 labelText: "Senha",
@@ -86,12 +94,17 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               obscureText: true,
             ),
-            MyStatefulCheckbox(),
-            ElevatedButton(
-              onPressed: () {
-                debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
-              },
-              child: Text("Enviar"),
+            // MyStatefulCheckbox(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+              child: ElevatedButton(
+                onPressed: () {
+                  debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
+                  String? user = cpfController.text;
+                  debugPrint(user);
+                },
+                child: Text("Enviar"),
+              ),
             ),
           ],
         ),
@@ -114,15 +127,6 @@ class _CheckBoxStfull extends State<MyStatefulCheckbox> {
 
   @override
   Widget build(BuildContext context) {
-    Color getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      return Colors.blueAccent;
-    }
-
     return CheckboxListTile(
       title: Text("Salvar cpf e senha"),
       controlAffinity: ListTileControlAffinity.leading,
