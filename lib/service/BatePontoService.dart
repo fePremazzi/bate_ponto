@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 Future<String> batePonto(String cpf, String pwd) async {
-  String apiUrl = FlutterConfig.get('API_URL'); // returns 'abcdefgh'
+  String? apiUrl = dotenv.env['API_URL'];
   final response = await http.get(
-    Uri.parse(Uri.encodeFull(apiUrl +
+    Uri.parse(Uri.encodeFull(apiUrl.toString() +
         '?acao=1'
         '&txtValor=' + cpf.trim() +
         '&txtSenha=' + pwd +

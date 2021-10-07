@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await FlutterConfig.loadEnvVariables();
+  await dotenv.load(fileName: ".env");
 
   runApp(HitDotApp());
 }
@@ -90,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
             MyStatefulCheckbox(),
             ElevatedButton(
               onPressed: () {
-                debugPrint(FlutterConfig.get('API_URL'));
+                debugPrint('DotEnv: ${dotenv.env["API_URL"]}');
               },
               child: Text("Enviar"),
             ),
